@@ -97,14 +97,17 @@ function evaluateCode(code: string, context: EvaluationContext): any {
       context.apis.forEach((a: any) => {
         try {
           const id = toSafeVar(a.id || 'api');
+          // Extract the actual data from response.body if it exists
+          const responseData = a.response?.body || a.response;
           const val = {
-            data: a.response,
-            response: a.response,
+            data: responseData,
+            response: responseData,
             isLoading: a.isLoading,
             error: a.error,
           };
           decls.push(`var ${id} = ${JSON.stringify(val)};`);
-        } catch {
+        } catch (err) {
+          console.warn('Failed to serialize API data for', id, err);
           // ignore serialization issues
         }
       });
@@ -225,7 +228,8 @@ function getApiValue(api: any, path: string[]): any {
   const firstKey = path[0];
 
   if (firstKey === 'data') {
-    let value = api.response;
+    // api.response might contain a nested body property
+    let value = api.response?.body || api.response;
     for (let i = 1; i < path.length; i++) {
       value = value?.[path[i]];
     }
@@ -241,7 +245,7 @@ function getApiValue(api: any, path: string[]): any {
   }
 
   if (firstKey === 'response') {
-    let value = api.response;
+    let value = api.response?.body || api.response;
     for (let i = 1; i < path.length; i++) {
       value = value?.[path[i]];
     }

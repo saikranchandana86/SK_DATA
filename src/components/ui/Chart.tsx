@@ -68,7 +68,9 @@ export const Chart: React.FC<ChartComponentProps> = ({ component }) => {
 
       try {
         if (s.data && typeof s.data === 'string') {
+          console.log('Chart: Evaluating series data:', s.data);
           const result = evaluateExpression(s.data, context);
+          console.log('Chart: Evaluated result:', result);
 
           if (Array.isArray(result)) {
             data = result.map((item, idx) => {
@@ -81,11 +83,27 @@ export const Chart: React.FC<ChartComponentProps> = ({ component }) => {
               }
               return { x: idx, y: Number(item) };
             });
+          } else {
+            console.warn('Chart: Result is not an array:', typeof result, result);
           }
+        } else if (Array.isArray(s.data)) {
+          // Handle direct array data
+          data = s.data.map((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+              return {
+                x: item.x ?? item.label ?? item.name ?? idx,
+                y: Number(item.y ?? item.value ?? 0),
+                ...item
+              };
+            }
+            return { x: idx, y: Number(item) };
+          });
         }
       } catch (error) {
         console.error('Error evaluating chart data:', error);
       }
+
+      console.log('Chart: Final data for series:', s.title, data);
 
       return {
         title: s.title || 'Series',
@@ -153,6 +171,21 @@ export const Chart: React.FC<ChartComponentProps> = ({ component }) => {
             <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p>No data available</p>
             <p className="text-sm mt-1">Bind data using the properties panel</p>
+            {props.series.length > 0 && (
+              <div className="mt-3 text-xs text-left max-w-md mx-auto">
+                <p className="font-semibold mb-1">Debug Info:</p>
+                <div className="bg-gray-800 p-2 rounded text-left overflow-auto max-h-32">
+                  <p>Series configured: {props.series.length}</p>
+                  {props.series.map((s, idx) => (
+                    <p key={idx} className="truncate">Series {idx + 1}: {s.data?.substring(0, 50)}...</p>
+                  ))}
+                  <p className="mt-1">APIs available: {apis.length}</p>
+                  {apis.map((api, idx) => (
+                    <p key={idx} className="text-blue-400">- {api.id}: {api.response ? 'Has data' : 'No data'}</p>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
