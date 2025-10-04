@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { Settings, Palette, Code, ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { ActionConfig } from '../../types';
 import { CodeEditor } from '../editors/CodeEditor';
+import { ChartSeriesEditor } from '../editors/ChartSeriesEditor';
 
 export const PropertiesPanel: React.FC = () => {
   const { selectedComponent, updateComponent, apis, sqlQueries, deleteComponent, selectComponent } = useAppStore();
@@ -680,19 +681,17 @@ export const PropertiesPanel: React.FC = () => {
                             Series data
                             <span className="ml-1 px-1 py-0.5 bg-blue-600 text-xs rounded">JS</span>
                           </label>
-                          <textarea
+                          <ChartSeriesEditor
                             value={series.data || ''}
-                            onChange={(e) => {
+                            onChange={(value) => {
                               const newSeries = [...(props.series || [])];
-                              newSeries[index] = { ...series, data: e.target.value };
+                              newSeries[index] = { ...series, data: value };
                               handlePropertyChange('series', newSeries);
                             }}
-                            placeholder="{{Total_assets.data.map(item => ({ x: item.c, y: item.total_clausetype }))}}"
-                            rows={3}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs font-mono focus:outline-none focus:border-blue-500 resize-none"
+                            placeholder="Type {{ to see available APIs and queries"
                           />
                           <p className="text-xs text-gray-400 mt-1">
-                            Format: [{'{'}x: "label", y: value{'}'}] or bind API data
+                            💡 Type <code className="bg-gray-700 px-1 rounded">{'{{'}</code> for autocomplete • Format: <code className="bg-gray-700 px-1 rounded">[{'{'}x: "label", y: value{'}'}]</code>
                           </p>
                         </div>
                       </div>
